@@ -23,11 +23,13 @@ Ghi `members` trong `submission/submission.json` theo dạng `"HoVaTen-MSSV"`, k
 
 ### Phần việc phụ trách
 
-Vai trong bàn: Vận hành và pháp lý.
+Vai trong bàn: Vận hành và pháp lý
 
-Câu nào của đề: 1.2, 1.4
+Câu nào của đề: 1.2, 1.4, 1.5
 
-mục nào của phiếu A/B/C, file nào (`lab10/guards.py`, `config/operating_gates.json`, …).
+Mục nào của phiếu A/B/C: A5
+
+File nào: `templates/form-a-criteria.md`
 
 ### Đóng góp cụ thể
 
@@ -35,7 +37,9 @@ mục nào của phiếu A/B/C, file nào (`lab10/guards.py`, `config/operating_
 
 ### Bằng chứng
 
-Mã commit, mã lần chạy (`runs/<mã>`), dòng trong phiếu.
+Mã commit,
+mã lần chạy (`runs/<mã>`),
+dòng trong phiếu.
 
 ### Exit ticket
 
