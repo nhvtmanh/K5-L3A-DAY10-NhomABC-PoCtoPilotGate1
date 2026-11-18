@@ -49,19 +49,27 @@ Một điều học được, một điều còn chưa chắc.
 
 ### Phần việc phụ trách
 
-Vai trong bàn; câu nào của đề, mục nào của phiếu A/B/C, file nào (`lab10/guards.py`, `config/operating_gates.json`, …).
+Vai trong bàn: Kỹ sư cổng.
+
+Câu đã phụ trách: 1.3, 2.1, 2.2; xây cổng kỹ thuật cho câu 2.6.
+
+Mục phiếu: Phiếu A mục A2; Phiếu B mục B0–B2 và B7.1.
+
+File: `lab10/guards.py`, `templates/form-a-criteria.md`, `templates/form-b-evaluation-gates.md`.
 
 ### Đóng góp cụ thể
 
-...
+Thiết kế metric offline đo độ chính xác khi ghi lỗi hãng bằng cách đối chiếu `carrier_id` và `parcel_id` với nhãn chuẩn. Xây các cổng đối chiếu quyền hoàn tiền với tracking/chính sách, xác minh lỗi hãng trước khi ghi, và loại nội dung ticket/thông tin liên hệ khỏi thông báo cho hãng. Chạy baseline và trace `T-002@55`; ghi nhận hoàn sai 20.000đ, một lỗi hãng oan, phân tích nguyên nhân và đề xuất xử lý trong Phiếu B.
+
+Có sử dụng AI hỗ trợ đọc cấu trúc repo, rà soát/soạn cổng trong `lab10/guards.py` và diễn giải kết quả vào các phiếu; cần tự nắm và giải thích được các quyết định kỹ thuật khi demo.
 
 ### Bằng chứng
 
-Mã commit, mã lần chạy (`runs/<mã>`), dòng trong phiếu.
+Baseline: `R-base-before-20261118-161943-fae142` (`runs/R-base-before-20261118-161943-fae142/report.json`); trace `T-002@55`. Bộ kiểm tra công khai: `python -m unittest discover -s tests` — 13 tests, OK. Nội dung đã ghi tại Phiếu A A2 và Phiếu B B0–B2, B7.1.
 
 ### Exit ticket
 
-Một điều học được, một điều còn chưa chắc.
+Tôi học được rằng phải kiểm soát lệnh ghi dựa trên nguồn dữ liệu có thẩm quyền, thay vì tin số liệu do model trích từ lời khách khai. Tôi còn cần xác nhận các cổng không làm hỏng ca hợp lệ qua lần chạy `base · after` và `prepared`.
 
 ## PhanVanCuong-2A202603669
 
