@@ -311,10 +311,12 @@ Mỗi con số kèm một câu lý do, lấy từ `data/world.json` → `ops_lim
 
 | Khoá | Giá trị bàn đặt | Lý do (một câu, có số) |
 |---|---|---|
-| `business.daily_refund_cap_vnd` | | |
-| `business.cost_budget_per_ticket_vnd` | | |
-| `business.pilot_scope` (all / warehouse / percent) | | |
-| `business.roi_min` | | |
+| `business.daily_refund_cap_vnd` | **2000000** | `ops_limits.daily_auto_refund_budget_vnd` = 2.000.000đ/ngày là ngân sách Finance đã chốt cho tổng hoàn TỰ ĐỘNG; đặt đúng bằng trần để khoản nào vượt thì chuyển người duyệt, không tiêu quá ngân sách một ngày. |
+| `business.cost_budget_per_ticket_vnd` | **1500** | `ops_limits.max_llm_cost_per_ticket_vnd` = 1.500đ là trần tiền máy cho một ticket đã thống nhất với Ops/Finance; đặt đúng trần để ticket sắp vượt (chữ quá dài) thì dừng gọi LLM và chuyển người, giữ chi phí dưới công làm tay 10.000đ (`ops_facts.manual_cost_per_ticket_vnd`). |
+| `business.pilot_scope` (all / warehouse / percent) | **{"mode": "warehouse", "warehouses": ["HN", "HCM"], "percent": 100}** | Gate 1 chỉ chạy thử ở **2 depot** theo đề bài; lấy trọn 2 kho HN + HCM (percent 100 trong 2 kho đó) thay vì `all` để bỏ kho CT/DN/HCM-B2B (kho sỉ giá trị đơn ≥ 2 triệu, rủi ro tiền lớn) và các kho chưa kiểm soát tải người duyệt; ticket ngoài phạm vi tiếp tục làm tay. |
+| `business.roi_min` | **0.2** | Trùng ngưỡng `roi_min` đã ký trong `acceptance_criteria.json` (`business_ops.roi_min = 0.2`): ROI 0,2 nghĩa là tiết kiệm ròng ≥ 20% so với làm tay 10.000đ/ticket (`ops_facts`), dưới mức này pilot không có lợi → report báo "vượt trần". |
+
+*Ghi chú: 4 khoá này chỉ là **con số cấu hình**, không phải code. Người nhập vào `config/operating_gates.json` là vai Vận hành/Kỹ sư cổng; bảng này là đề xuất đã thống nhất của vai Sản phẩm và kinh doanh. `roi_min` ở đây phải khớp `business_ops.roi_min` trong bản tiêu chí đã ký.*
 
 ### B7.5 · Câu 2.10 · Cổng con người, vận hành, pháp lý + Runbook phần 1–3
 
