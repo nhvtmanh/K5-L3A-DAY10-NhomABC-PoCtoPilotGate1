@@ -25,9 +25,9 @@ Ghi `members` trong `submission/submission.json` theo dạng `"HoVaTen-MSSV"`, k
 
 Vai trong bàn: Vận hành và pháp lý
 
-Câu nào của đề: 1.2, 1.4, 1.5
+Câu nào của đề: 1.2, 1.4, 1.5, 2.4, 2.5
 
-Mục nào của phiếu A/B/C: A5
+Mục nào của phiếu A/B/C: A1, A2, A3, A5, B5, B6
 
 File nào: `templates/form-a-criteria.md`
 
