@@ -58,7 +58,7 @@ def write_gate(ctx, action):
 
         # Refund entitlement comes from tracking and policy, never from the
         # delay claimed in customer text or a model proposal.
-        parcel = max(order["parcels"], key=lambda p: H.db_delay_days(p, ctx.as_of))
+        parcel = H.ticket_parcel(order, ctx.ticket, ctx.as_of)
         delay = H.db_delay_days(parcel, ctx.as_of)
         cause = parcel.get("delay_cause") or ("CARRIER" if delay > 0 else None)
         entitled = H.entitlement_vnd(policy, order, delay, cause)
@@ -84,7 +84,7 @@ def write_gate(ctx, action):
         if policy is None:
             return Verdict.escalate("không xác định được chính sách có hiệu lực")
 
-        parcel = max(order["parcels"], key=lambda p: H.db_delay_days(p, ctx.as_of))
+        parcel = H.ticket_parcel(order, ctx.ticket, ctx.as_of)
         delay = H.db_delay_days(parcel, ctx.as_of)
         # A carrier fault affects a third party. Require a recorded cause and
         # a policy-eligible delay, then bind the write to that parcel/carrier.
