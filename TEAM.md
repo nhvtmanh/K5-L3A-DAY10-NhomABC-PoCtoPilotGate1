@@ -51,21 +51,21 @@ Một điều học được, một điều còn chưa chắc.
 
 Vai trong bàn: Kỹ sư cổng.
 
-Câu đã phụ trách: 1.3, 2.1, 2.2, 2.6, 2.7, 2.8.
+Câu đã phụ trách: 1.3, 2.1, 2.2, 2.6, 2.7, 2.8, 3.1 (Phiếu C C2, phần S8 ở C3.1/C3.4 và C4).
 
-Mục phiếu: Phiếu A mục A2; Phiếu B mục B0–B2 và B7.1–B7.3.
+Mục phiếu: Phiếu A mục A2; Phiếu B mục B0–B2 và B7.1–B7.3; Phiếu C mục C2, C3.1/C3.4 và C4.
 
 File: `lab10/guards.py`, `templates/form-a-criteria.md`, `templates/form-b-evaluation-gates.md`.
 
 ### Đóng góp cụ thể
 
-Thiết kế metric offline đo độ chính xác khi ghi lỗi hãng bằng cách đối chiếu `carrier_id` và `parcel_id` với nhãn chuẩn. Xây các cổng ghim policy hiệu lực, đối chiếu quyền hoàn tiền với tracking/chính sách, xác minh kiện hàng/nguyên nhân trước khi ghi lỗi hãng, chặn hoàn trùng ticket và lọc nội dung/PII khỏi thông báo hãng. Chạy baseline và trace `T-002@55`, ghi nhận 20.000đ hoàn sai và một lỗi hãng oan; sau sửa chạy `after` đạt 110/110, không còn hoàn sai, lỗi hãng oan hay lộ PII. Thử thêm hai ticket adhoc: chặn yêu cầu hoàn trái tracking và giữ được khoản hoàn hợp lệ trong khi loại số điện thoại/ghi chú khỏi thông báo hãng. Đề xuất hai bước chống overfit theo ticket cụ thể và kiểm tra trên ca độc lập/hidden set.
+Thiết kế metric offline đo độ chính xác khi ghi lỗi hãng bằng cách đối chiếu `carrier_id` và `parcel_id` với nhãn chuẩn. Xây các cổng ghim policy hiệu lực, đối chiếu quyền hoàn tiền với tracking/chính sách, xác minh kiện hàng/nguyên nhân trước khi ghi lỗi hãng, chặn hoàn trùng ticket và lọc nội dung/PII khỏi thông báo hãng. Chạy baseline và trace `T-002@55`, ghi nhận 20.000đ hoàn sai và một lỗi hãng oan; sau sửa chạy `after` đạt 110/110, không còn hoàn sai, lỗi hãng oan hay lộ PII. Thử thêm hai ticket adhoc: chặn yêu cầu hoàn trái tracking và giữ được khoản hoàn hợp lệ trong khi loại số điện thoại/ghi chú khỏi thông báo hãng. Với thẻ S8, truy vết và phân biệt ba nguyên nhân dùng approval sai: mã hết hạn, số tiền vượt `max_vnd`, và mã thuộc ticket/đơn khác; ghi tác hại, nguồn lỗi, mức kiểm soát người duyệt và HAZOP vào Phiếu C. Đề xuất hai bước chống overfit theo ticket cụ thể và kiểm tra trên ca độc lập/hidden set.
 
 Có sử dụng AI hỗ trợ đọc cấu trúc repo, rà soát/soạn cổng trong `lab10/guards.py` và diễn giải kết quả vào các phiếu; cần tự nắm và giải thích được các quyết định kỹ thuật khi demo.
 
 ### Bằng chứng
 
-Baseline: `R-base-before-20261118-161943-fae142`; sau sửa: `R-base-after-20261118-170020-bc4577` (`runs/R-base-after-20261118-170020-bc4577/report.json`); trace `T-002@55`; hai trace adhoc seed 11 ghi ở Phiếu B B7.3. `lab10.gate` xác nhận mọi tiêu chí đã ký đều đạt trên run after. Bộ kiểm tra công khai: `python -X utf8 -m unittest discover -s tests` — 13 tests, OK. Bằng chứng trong Phiếu A A2 và Phiếu B B0–B2, B7.1–B7.3.
+Baseline: `R-base-before-20261118-161943-fae142`; sau sửa: `R-base-after-20261118-170020-bc4577` (`runs/R-base-after-20261118-170020-bc4577/report.json`); trace `T-002@55`; hai trace adhoc seed 11 ở Phiếu B B7.3. Thẻ S8: trace `S8-02@11` và `S8-03@11` ở stage base, `S8-04@11` ở prepared; mốc grade `R-S8-grade-20261118-172902-d2c575`. `lab10.gate` xác nhận mọi tiêu chí đã ký đạt trên run after; bộ public có 13 tests, OK. Bằng chứng trong Phiếu A A2, Phiếu B B0–B2/B7.1–B7.3 và Phiếu C C2/C3.1/C3.4/C4.
 
 ### Exit ticket
 
