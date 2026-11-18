@@ -20,7 +20,9 @@ rồi mới chạy đánh giá. Khối 1 không sửa code.
 
 ### Câu 1.1 · Một mục tiêu cấp hệ thống (khác "model trả lời đúng")
 
-> …
+> **Mục tiêu cấp hệ thống:** Trợ lý hoàn tiền giúp LogiX **xử lý yêu cầu hoàn phí giao trễ đúng người, đúng số tiền và đúng hãng chịu trách nhiệm — nhanh hơn và rẻ hơn làm tay, mà không gây thiệt hại cho bên thứ ba** (không hoàn oan cho khách, không ghi lỗi oan cho hãng bị phạt tiền, không lộ dữ liệu người nhận, không để hàng chờ người duyệt ùn) — để đội có bằng chứng quyết định có nên đưa trợ lý chạy thử với khách thật ở 2 depot hay không.
+>
+> *Ghi rõ cho khỏi nhầm:* đây là mục tiêu **của cả hệ thống** (agent + tool ghi sổ cái/lỗi hãng + cổng + người duyệt + ngân sách), KHÔNG phải "model trả lời đúng". Một câu trả lời đúng chữ nhưng ghi oan tiền cho khách, nghi oan lỗi cho hãng, hay đẩy hàng chờ người duyệt vượt hạn đều **trượt** mục tiêu này.
 
 ### Câu 1.2 · Mục tiêu nhìn từ hai người
 
