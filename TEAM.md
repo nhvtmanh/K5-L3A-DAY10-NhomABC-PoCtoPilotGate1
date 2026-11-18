@@ -13,7 +13,7 @@ Họ tên đầy đủ và MSSV của **mọi** thành viên; thêm dòng nếu 
 
 | STT | Họ và tên                  | MSSV        | Vai                    | Trưởng nhóm |
 | --: | -------------------------- | ----------- | ---------------------- | :---------: |
-|   1 | Nguyễn Hoàng Văn Tiến Mạnh | 2A202603717 | Vận hành và pháp lý    |             |
+|   1 | Nguyễn Hoàng Văn Tiến Mạnh | 2A202603717 | Vận hành và pháp lý    |     Có      |
 |   2 | Lê Hoàng Anh               | 2A202603691 | Kỹ sư cổng             |             |
 |   3 | Phan Văn Cường             | 2A202603669 | Sản phẩm và kinh doanh |             |
 
@@ -27,23 +27,42 @@ Vai trong bàn: Vận hành và pháp lý
 
 Câu nào của đề: 1.2, 1.4, 1.5, 2.4, 2.5, 2.10, 3.0
 
-Mục nào của phiếu A/B/C: A1, A2, A3, A5, B5, B6, B7.5, B8, C0, C1
+Mục nào của phiếu A/B/C: A1, A2, A3, A5, B5, B6, B7.5, B8, C0, C1, C12
 
-File nào: `templates/form-a-criteria.md`
+File nào:
+
+- `templates/form-a-criteria.md`
+- `templates/form-b-evaluation-gates.md`
+- `config/operating_gates.json`
+- `lab10/guards_round1.py`
+- `config/operating_gates.round1.json`
+- `config/round1.lock`
+- `templates/form-c-incident.md`
+- `submission/submission.json`
+- `.gitattributes`
+- `TEAM.md`
 
 ### Đóng góp cụ thể
 
-...
+Hoàn thành phần mục tiêu bên liên quan, telemetry production, đọc khoảng tin cậy và kiểm tra bằng chứng ký tiêu chí trong Phiếu A. Phân tích HAZOP, lập checklist chín nhóm việc và pre-mortem; cấu hình cổng vận hành/pháp lý, viết runbook và phương án giờ cao điểm trong Phiếu B.
+
+Chốt cổng vòng 1, đối chiếu report để lập quyết định v1; ghi nhận mốc prepared của S8 và hoàn thiện quyết định v2 Thu hẹp cùng ba dòng bắt buộc. Đồng bộ thông tin bài nộp, gom và kiểm tra đủ thành phần. Khắc phục lỗi integrity do CRLF/LF, bổ sung `.gitattributes` và kiểm tra lại đạt PASS-VISIBLE.
+
+Có sử dụng AI (Codex/ChatGPT) hỗ trợ đọc yêu cầu, lịch sử commit và report; soạn và rà soát nội dung phiếu, cấu hình vận hành/pháp lý, xử lý lỗi định dạng CRLF/LF và kiểm tra hồ sơ nộp. Tôi chịu trách nhiệm kiểm tra kết quả, hiểu và giải thích các ngưỡng, quyết định v1/v2 cùng giới hạn của bằng chứng khi demo.
 
 ### Bằng chứng
 
-Mã commit,
-mã lần chạy (`runs/<mã>`),
-dòng trong phiếu.
+- Commit: `c7e8880` (1.2), `480ab1d` (1.5), `789b703` (A5), `ebcb92a` (2.4–2.5), `a9a51cf` (chốt cổng vòng 1 và v1), `c5ad5dd` (3.0). Bằng chứng nội dung tại Phiếu A A1–A3/A5, Phiếu B B4–B6/B7.5–B7.6/B8 và Phiếu C C0–C1/C12.
+- Kiểm tra cấu hình vận hành: `R-base-after-20261118-171510-d2c575`; chốt vòng 1: hash `02d3f54f`, run `R-base-prepared-20261118-172200-d2c575` — mọi ngưỡng đã ký đạt, chi phí 5.550đ/ticket, ROI 0,80, 0 ca ùn.
+- Mốc đầu sự cố: grade `R-S8-grade-20261118-172902-d2c575`, prepared `R-S8-prepared-20261118-172903-d2c575` — còn 1.140.000đ hoàn sai, 5 lỗi hãng oan, kiểm lại 100%; dùng đối chiếu pre-mortem ở C1.
+- Kiểm tra hoàn thiện: grade `R-S8-grade-20261118-210524-19ef2e` — PASS-VISIBLE, integrity/criteria/visible/regression/monitor đều đạt, chưa chạy test ẩn. Ba mốc: `R-S8-before-20261118-210524-19ef2e`, `R-S8-prepared-20261118-210524-19ef2e`, `R-S8-after-20261118-210525-19ef2e`; after hoàn sai/lỗi hãng oan/PII đều 0, chi phí 2.978đ/ticket, ROI 2,36. Report được gom trong `submission/runs/`, quyết định v2 Thu hẹp và ba dòng bắt buộc khớp C12 với `submission/submission.json`.
+- Lệnh `lab10.check_submission --collect` đã báo ĐỦ THÀNH PHẦN; các cập nhật hoàn thiện C12, hồ sơ nộp và `.gitattributes` hiện chưa có commit mới, không gán vào các commit trước đó.
 
 ### Exit ticket
 
-Một điều học được, một điều còn chưa chắc.
+Tôi học được rằng quyết định pilot phải dựa trên tiêu chí đã ký và bằng chứng theo từng phân khúc; cổng kỹ thuật cần đi cùng người duyệt, ngưỡng dừng và quy trình đối soát.
+
+Tôi còn cần xác minh trên pilot thật liệu việc kiểm phê duyệt có chặn được thu hồi đồng thời, và chi phí cùng thời gian chờ có giữ trong ngưỡng khi lượng ticket tăng.
 
 ## LeHoangAnh-2A202603691
 
@@ -106,4 +125,3 @@ Ký tiêu chí: commit `9f82d7f` (Sign acceptance criteria), hash tiêu chí `99
 ### Exit ticket
 
 Tôi học được rằng tiêu chí kinh doanh phải là **ngưỡng tiền/ROI tường minh kèm hành động khi vượt trần**, chứ không chỉ là "chạy đúng"; và ngưỡng an toàn liên quan tiền phải đặt về 0, không thương lượng bằng chi phí. Tôi còn chưa chắc chi phí 2.978đ/ticket và ROI 2,36 ở đây có giữ được trên dữ liệu pilot thật (LLM/ticket thực vẫn dưới trần 1.500đ và khối lượng ticket thật đúng giả định) — cần đo lại trước Bước đánh giá 2.
-

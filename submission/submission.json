@@ -1,17 +1,16 @@
 {
-  "team": "NhomABC",
-  "members": [
-    "NguyenHoangVanTienManh-2A202603717",
-    "LeHoangAnh-2A202603691",
-    "PhanVanCuong-2A202603669"
-  ],
-  "incident": "S8",
-  "decision_v1": "Thu hẹp",
-  "decision_v2": "Tiếp tục",
-  "three_lines": {
-    "environment_assumption": "Bảng approvals ngoài thực tế luôn đúng phạm vi, còn hạn, còn hiệu lực và max_vnd không thấp hơn khoản chi — nhưng thực tế mã bị thu hồi, hết hạn hoặc đổi người duyệt ngoài phần mềm.",
-    "reduce_or_prevent": "Cổng NGĂN được nhánh phổ biến (sai phạm vi, hết hạn, thu hồi, vượt max) vì _approval_ok kiểm đủ 4 điều kiện và chặn trước lệnh ghi (hoàn sai 1.140.000đ về 0); chỉ GIẢM nhánh race khi approval bị thu hồi đúng lúc ghi vì chưa có khóa nguyên tử.",
-    "measure_in_pilot": "Đo trên dữ liệu production: tỉ lệ approval thực tế bị thu hồi/hết hạn (approval_gate_block_rate thật), tần suất race thu hồi đồng thời, và chi phí LLM thực mỗi ticket so với trần 1.500đ trước khi nới kiểm mẫu."
-  }
+	"team": "NhomABC",
+	"members": [
+		"NguyenHoangVanTienManh-2A202603717",
+		"LeHoangAnh-2A202603691",
+		"PhanVanCuong-2A202603669"
+	],
+	"incident": "S8",
+	"decision_v1": "Thu hẹp",
+	"decision_v2": "Thu hẹp",
+	"three_lines": {
+		"environment_assumption": "Thiết kế giả định snapshot approvals và liên kết ticket–đơn–khách phản ánh đúng thẩm quyền tại lúc ghi, đặc biệt mã chưa bị thu hồi sau lần đọc; ngoài đời dữ liệu có thể chậm đồng bộ hoặc bị thu hồi đồng thời, nên cần kiểm tra lại và ghi sổ nguyên tử thay vì chỉ tin snapshot.",
+		"reduce_or_prevent": "Cổng NGĂN các trường hợp sai phạm vi, trạng thái, hạn dùng, người duyệt hoặc vượt max_vnd mà phép kiểm hiện tại nhận diện trước ghi trên snapshot đáng tin; S8 prepared→after ghi nhận hoàn sai 1.140.000→0đ và lỗi hãng oan 5→0, nhưng hệ thống tổng thể chỉ GIẢM rủi ro vì chưa chứng minh chặn thu hồi đồng thời, dữ liệu nguồn sai hay mọi đường chuẩn hóa số tiền sau kiểm.",
+		"measure_in_pilot": "Trong pilot HN/HCM với 1 người duyệt và kiểm mẫu 10%, đo số khoản thực dùng approval sai qua đối soát ledger–approval độc lập, sự kiện thu hồi đồng thời, approval_gate_block_rate (mock nền 0, S8 0,04 là tỉ lệ bị chặn, không phải tỉ lệ thu hồi thực), chờ tối đa/ca ùn theo SLA 60 phút, chi phí tổng ≤10.000đ/ticket, tiền máy ≤1.500đ/ticket và ROI ≥0,20; xác minh PII, lỗi hãng và độ phủ trước Bước đánh giá 2, không coi số mock là cam kết production."
+	}
 }
-
