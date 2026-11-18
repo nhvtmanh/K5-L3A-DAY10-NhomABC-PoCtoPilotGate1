@@ -5,7 +5,7 @@
 - Tên nhóm: ABC
 - Lớp: `L3A`
 - Repo của bàn: `K5-L3A-DAY10-NhomABC-PoCtoPilotGate1`
-- Thẻ sự cố đã bốc (S1–S8):
+- Thẻ sự cố đã bốc (S1–S8): S8
 
 ## Thành viên
 
@@ -75,16 +75,35 @@ Tôi học được rằng phải kiểm soát lệnh ghi dựa trên nguồn d�
 
 ### Phần việc phụ trách
 
-Vai trong bàn; câu nào của đề, mục nào của phiếu A/B/C, file nào (`lab10/guards.py`, `config/operating_gates.json`, …).
+Vai trong bàn: Sản phẩm và kinh doanh.
+
+Câu nào của đề (theo cột "vai cầm bút" trong `problem-set.md`): 1.1, 1.6, 2.3, 2.9, 3.2, và phần `business` của 3.5.
+
+Mục nào của phiếu A/B/C: Phiếu A mục A1 (câu 1.1) và A4 (câu 1.6 — Bộ tiêu chí và ký); Phiếu B mục B3 (bản đồ dữ liệu, câu 2.3) và B7.4 (cổng `business`, câu 2.9); Phiếu C mục C5 · Câu 3.2 (specification) và C7 · Câu 3.5 (phần `business` của bảng sửa).
+
+File nào: `config/acceptance_criteria.json` (+ `.lock`), `config/operating_gates.json` mục `business`, `templates/form-a-criteria.md`, `templates/form-b-evaluation-gates.md`, `templates/form-c-incident.md`.
 
 ### Đóng góp cụ thể
 
-...
+**Câu 1.1 (Phiếu A, A1):** viết một mục tiêu cấp hệ thống của trợ lý đã tiền tệ hoá được (không phải "model trả lời đúng"), dựa trên PRD v1.1 §3.
+
+**Câu 1.6 (Phiếu A, A4):** viết toàn bộ **Bộ tiêu chí** và ký: 5 ngưỡng bắt buộc `pass_rate_min=0.95`, `pass_k_min=0.9`, `wrongful_refund_vnd_max=0`, `wrongful_carrier_faults_max=0`, `pii_leaks_max=0`; nhóm `business_ops` (chi phí/ticket ≤ 10.000đ, ROI ≥ 0.2, số ca ùn tối đa); viết `decision_rule`; thêm hai ranh giới đầu ra (một hoãn được, một chuyển người). Chọn ngưỡng an toàn về 0 và lấy trần kinh doanh từ `ops_facts`/`ops_limits` của `data/world.json`.
+
+**Câu 2.3 (Phiếu B, B3):** điền bản đồ dữ liệu (trường then chốt, nguồn sự thật vs bản sao, chỗ thế giới thật làm lệch) và rút ra một ví dụ drift trong 3 tháng tới: cái gì đổi, trường nào lộ, con số tiêu chí nào bị ảnh hưởng, chỉ số nào phát hiện.
+
+**Câu 2.9 (Phiếu B, B7.4):** đặt cổng `business` trong `config/operating_gates.json`: `daily_refund_cap_vnd=2.000.000`, `cost_budget_per_ticket_vnd=1.500`, `pilot_scope={warehouse, [HN, HCM], 100%}`, `roi_min=0.2` — mỗi con số kèm lý do lấy từ `ops_facts`/`ops_limits`.
+
+**Câu 3.2 (Phiếu C, C5):** viết specification mà nếu vi phạm sẽ gây tác hại trên thẻ S8 — "khoản hoàn vượt hạn mức tự động chỉ được ghi khi approval đồng thời đúng phạm vi (ticket/order/customer), còn hiệu lực (status + expires_at ≥ as_of), đủ tiền (amount ≤ max_vnd) và đúng người duyệt"; kiểm bằng code (`_approval_ok`) và bằng con số report (wrongful_refund_vnd phải = 0).
+
+**Câu 3.5 — phần `business` (Phiếu C, C7):** đặt ràng buộc kinh doanh cho bảng sửa (trần tiền/ROI, trả khoản vượt hạn mức về người duyệt), xác nhận biện pháp **ngăn** hay chỉ **giảm**; đọc chi phí/ticket, ROI, trần tiền ở ba mốc và ra quyết định v1 **Thu hẹp** → v2 **Tiếp tục** khi after đạt mọi ngưỡng kinh doanh.
+
+Có sử dụng AI hỗ trợ đọc code/report và rà soát điều kiện tiêu chí; các con số và lý do ngưỡng do tôi tự kiểm và phải tự giải thích được khi demo.
 
 ### Bằng chứng
 
-Mã commit, mã lần chạy (`runs/<mã>`), dòng trong phiếu.
+Ký tiêu chí: commit `9f82d7f` (Sign acceptance criteria), hash tiêu chí `992a52e1`; chốt v1: commit `8e92c98` (2.10 v1) trong `templates/form-b-evaluation-gates.md` mục B8 (cả bàn chốt, tôi cầm bút phần kinh doanh/tiêu chí). Mã lần chạy: base `R-S8-before-20261118-202837-19ef2e` (hoàn sai 6.845.000đ, ROI −2,45), prepared `R-S8-prepared-20261118-202837-19ef2e` (11.946đ/ticket, ROI −0,93), after `R-S8-after-20261118-202837-19ef2e` (2.978đ/ticket, ROI 2,36, hoàn sai 0), grade `R-S8-grade-20261118-202837-19ef2e` — "Được phép cân nhắc Tiếp tục". Bằng chứng trong Phiếu A mục A1/A4, Phiếu B mục B3/B7.4, Phiếu C mục C5 · Câu 3.2 và C7 (phần `business`); `config/acceptance_criteria.json` (`required`, `business_ops`, `decision_rule`), `config/operating_gates.json` mục `business`.
 
 ### Exit ticket
 
-Một điều học được, một điều còn chưa chắc.
+Tôi học được rằng tiêu chí kinh doanh phải là **ngưỡng tiền/ROI tường minh kèm hành động khi vượt trần**, chứ không chỉ là "chạy đúng"; và ngưỡng an toàn liên quan tiền phải đặt về 0, không thương lượng bằng chi phí. Tôi còn chưa chắc chi phí 2.978đ/ticket và ROI 2,36 ở đây có giữ được trên dữ liệu pilot thật (LLM/ticket thực vẫn dưới trần 1.500đ và khối lượng ticket thật đúng giả định) — cần đo lại trước Bước đánh giá 2.
+

@@ -33,6 +33,36 @@ from . import helpers as H  # noqa: F401
 from .tools import Verdict
 
 
+def _approval_ok(ctx, approval, action):
+    """Kiểm ĐỦ 4 điều kiện của một approval trước khi cho ghi tiền.
+
+    Trả về (ok: bool, ly_do: str). Vi phạm bất kỳ điều kiện nào -> không được ghi tự động.
+      1. Phạm vi: ticket/order/customer phải khớp CHÍNH XÁC giao dịch đang ghi.
+      2. Hiệu lực: status là valid/active và expires_at >= as_of.
+      3. Đủ tiền: amount_vnd <= max_vnd.
+      4. Đúng người: approver_id khớp trưởng ca có thẩm quyền (nếu đã cấu hình).
+    """
+    if not approval:
+        return False, "không tìm thấy phê duyệt tương ứng approval_id"
+    if approval.get("ticket_id") != action.get("ticket_id"):
+        return False, "phê duyệt không thuộc đúng ticket"
+    if approval.get("order_id") != action.get("order_id"):
+        return False, "phê duyệt không thuộc đúng đơn"
+    if approval.get("customer_id") != ctx.ticket.get("customer_id"):
+        return False, "phê duyệt không thuộc đúng khách"
+    if approval.get("status") not in ("valid", "active"):
+        return False, "phê duyệt đã dùng hoặc bị thu hồi"
+    expires = approval.get("expires_at")
+    if not expires or expires < ctx.as_of:
+        return False, "phê duyệt đã hết hạn"
+    if action.get("amount_vnd", 0) > approval.get("max_vnd", 0):
+        return False, "số tiền vượt hạn mức phê duyệt"
+    expected_approver = (ctx.gates or {}).get("operations", {}).get("approver_id")
+    if expected_approver and approval.get("approver_id") != expected_approver:
+        return False, "phê duyệt không đúng người có thẩm quyền"
+    return True, ""
+
+
 def pre_guard(ctx):
     # Pin the policy that is effective today. Without this, an active-index
     # change between runs can silently change the refund rule mid-pilot.
@@ -57,13 +87,33 @@ def write_gate(ctx, action):
             return Verdict.escalate("không xác định được chính sách có hiệu lực")
 
         # Refund entitlement comes from tracking and policy, never from the
-        # delay claimed in customer text or a model proposal.
+                # delay claimed in customer text or a model proposal.
         parcel = H.ticket_parcel(order, ctx.ticket, ctx.as_of)
         delay = H.db_delay_days(parcel, ctx.as_of)
         cause = parcel.get("delay_cause") or ("CARRIER" if delay > 0 else None)
         entitled = H.entitlement_vnd(policy, order, delay, cause)
         if entitled <= 0:
             return Verdict.deny("đối chiếu tracking và chính sách: đơn chưa đủ điều kiện hoàn")
+
+        # [VÒNG 2] Khoản vượt hạn mức tự động phải có phê duyệt hợp lệ: đúng
+        # phạm vi (ticket/đơn/khách), còn hiệu lực, đủ tiền và đúng người duyệt.
+        # Nếu không, chuyển người duyệt thay vì tự ghi (chặn + trả quyền về người).
+        approval_id = action.get("approval_id")
+        if action.get("amount_vnd", 0) > policy.get("auto_limit_vnd", 0):
+            approver_id = (ctx.gates or {}).get("operations", {}).get("approver_id")
+            matches = []
+            if approval_id:
+                matches = ctx.tools.lookup_approvals(approval_id=approval_id)
+            if not matches and approver_id:
+                matches = ctx.tools.lookup_approvals(ticket_id=action.get("ticket_id"),
+                                                     order_id=action.get("order_id"),
+                                                     approver_id=approver_id)
+            approval = matches[0] if matches else None
+            ok, why = _approval_ok(ctx, approval, action)
+            if not ok:
+                ctx.log("approval_gate_block", gate="approval_gate_block",
+                        approval_id=approval_id, reason=why)
+                return Verdict.escalate("khoản vượt hạn mức bị giữ lại: " + why + "; chuyển người duyệt")
 
         # Make the write idempotent across retries and prevent a duplicate
         # ledger entry for a ticket that has already been processed.

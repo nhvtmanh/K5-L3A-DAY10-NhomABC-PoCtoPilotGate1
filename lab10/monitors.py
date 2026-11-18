@@ -19,7 +19,21 @@ def escalation_rate(trials):
     return sum(t["status"] == "escalated" for t in trials) / max(1, len(trials))
 
 
+def approval_gate_block_rate(trials):
+    """Tỉ lệ lần chạy mà cổng phê duyệt (vòng 2) đã chặn một khoản vượt hạn mức
+    vì approval sai phạm vi / hết hạn / thu hồi / vượt max / sai người duyệt.
+
+    Sự kiện do guards.py ghi khi _approval_ok trả False: {"type": "guard",
+    "gate": "approval_gate_block", ...}. Đây là tín hiệu "cổng đang làm việc" và
+    cũng là proxy cho mức độ dữ liệu phê duyệt bẩn trong luồng, không cần nhãn đúng/sai.
+    """
+    blocked = sum(any(e.get("gate") == "approval_gate_block" for e in t.get("events", []))
+                  for t in trials)
+    return blocked / max(1, len(trials))
+
+
 MONITORS = {
     "escalation_rate": escalation_rate,     # có sẵn; KHÔNG tính là metric mới của đội
+    "approval_gate_block_rate": approval_gate_block_rate,   # metric mới vòng 2 (thẻ S8)
 }
 STARTER_MONITORS = ("escalation_rate",)

@@ -1,12 +1,17 @@
 {
-  "team": "",
-  "members": [],
-  "incident": "",
-  "decision_v1": "",
-  "decision_v2": "",
+  "team": "NhomABC",
+  "members": [
+    "NguyenHoangVanTienManh-2A202603717",
+    "LeHoangAnh-2A202603691",
+    "PhanVanCuong-2A202603669"
+  ],
+  "incident": "S8",
+  "decision_v1": "Thu hẹp",
+  "decision_v2": "Tiếp tục",
   "three_lines": {
-    "environment_assumption": "",
-    "reduce_or_prevent": "",
-    "measure_in_pilot": ""
+    "environment_assumption": "Bảng approvals ngoài thực tế luôn đúng phạm vi, còn hạn, còn hiệu lực và max_vnd không thấp hơn khoản chi — nhưng thực tế mã bị thu hồi, hết hạn hoặc đổi người duyệt ngoài phần mềm.",
+    "reduce_or_prevent": "Cổng NGĂN được nhánh phổ biến (sai phạm vi, hết hạn, thu hồi, vượt max) vì _approval_ok kiểm đủ 4 điều kiện và chặn trước lệnh ghi (hoàn sai 1.140.000đ về 0); chỉ GIẢM nhánh race khi approval bị thu hồi đúng lúc ghi vì chưa có khóa nguyên tử.",
+    "measure_in_pilot": "Đo trên dữ liệu production: tỉ lệ approval thực tế bị thu hồi/hết hạn (approval_gate_block_rate thật), tần suất race thu hồi đồng thời, và chi phí LLM thực mỗi ticket so với trần 1.500đ trước khi nới kiểm mẫu."
   }
 }
+
