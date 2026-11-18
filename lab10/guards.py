@@ -34,9 +34,75 @@ from .tools import Verdict
 
 
 def pre_guard(ctx):
-    return Verdict.allow()
+    # Pin the policy that is effective today. Without this, an active-index
+    # change between runs can silently change the refund rule mid-pilot.
+    policy = H.effective_policy(ctx.tools.lookup_policies(), ctx.as_of)
+    if policy is None:
+        return Verdict.escalate("không xác định được chính sách có hiệu lực; cần người kiểm tra")
+    return Verdict.allow(policy_id=policy["policy_id"])
 
 
 def write_gate(ctx, action):
     # action = {"tool": "issue_refund", "ticket_id":..., "order_id":..., "amount_vnd":..., "payer":..., ...}
+    tool = action.get("tool")
+
+    if tool == "issue_refund":
+        order = ctx.tools.lookup_order(action.get("order_id"))
+        if order is None or order.get("customer_id") != ctx.ticket.get("customer_id"):
+            return Verdict.escalate("không xác minh được chủ đơn từ dữ liệu nguồn")
+
+        policies = ctx.tools.lookup_policies()
+        policy = H.effective_policy(policies, ctx.as_of)
+        if policy is None:
+            return Verdict.escalate("không xác định được chính sách có hiệu lực")
+
+        # Refund entitlement comes from tracking and policy, never from the
+        # delay claimed in customer text or a model proposal.
+        parcel = max(order["parcels"], key=lambda p: H.db_delay_days(p, ctx.as_of))
+        delay = H.db_delay_days(parcel, ctx.as_of)
+        cause = parcel.get("delay_cause") or ("CARRIER" if delay > 0 else None)
+        entitled = H.entitlement_vnd(policy, order, delay, cause)
+        if entitled <= 0:
+            return Verdict.deny("đối chiếu tracking và chính sách: đơn chưa đủ điều kiện hoàn")
+
+        # Make the write idempotent across retries and prevent a duplicate
+        # ledger entry for a ticket that has already been processed.
+        prior = ctx.tools.ledger_rows(ticket_id=action.get("ticket_id"))
+        if prior:
+            return Verdict.deny("ticket này đã có khoản hoàn trong sổ cái")
+
+        if action.get("amount_vnd", 0) != entitled or action.get("payer") != "LOGIX":
+            return Verdict.modify("chuẩn hóa số tiền theo entitlement từ DB và chính sách",
+                                  amount_vnd=entitled, payer="LOGIX", basis="policy")
+
+    elif tool == "file_carrier_fault":
+        order = ctx.tools.lookup_order(action.get("order_id"))
+        if order is None or order.get("customer_id") != ctx.ticket.get("customer_id"):
+            return Verdict.escalate("không xác minh được đơn trước khi ghi lỗi cho hãng")
+        policies = ctx.tools.lookup_policies()
+        policy = H.effective_policy(policies, ctx.as_of)
+        if policy is None:
+            return Verdict.escalate("không xác định được chính sách có hiệu lực")
+
+        parcel = max(order["parcels"], key=lambda p: H.db_delay_days(p, ctx.as_of))
+        delay = H.db_delay_days(parcel, ctx.as_of)
+        # A carrier fault affects a third party. Require a recorded cause and
+        # a policy-eligible delay, then bind the write to that parcel/carrier.
+        if not H.carrier_at_fault(policy, parcel, delay):
+            return Verdict.deny("tracking không chứng minh lỗi thuộc hãng theo chính sách")
+        expected = {"parcel_id": parcel["parcel_id"], "carrier_id": parcel["carrier_id"],
+                    "driver_id": parcel.get("driver_id"), "delay_days": delay}
+        if any(action.get(key) != value for key, value in expected.items()):
+            return Verdict.modify("đối chiếu lại kiện hàng, hãng và độ trễ từ tracking", **expected)
+
+    elif tool == "notify_carrier":
+        # Ticket text and recipient contact details are not needed by the
+        # carrier to investigate the delivery exception.
+        payload = action.get("payload") or {}
+        safe_payload = {k: v for k, v in payload.items()
+                        if k not in {"customer_note", "recipient_contact", "phone", "name", "street"}}
+        if safe_payload != payload:
+            return Verdict.modify("loại bỏ nội dung ticket và thông tin liên hệ khỏi thông báo hãng",
+                                  payload=safe_payload)
+
     return Verdict.allow()
