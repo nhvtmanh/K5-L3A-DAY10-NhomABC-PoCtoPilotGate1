@@ -50,12 +50,12 @@ trợ lý có đang gây thiệt hại cho bên ngoài LogiX không; không có 
 
 | | Offline, cho MỘT bước (câu 1.3) | Telemetry production (câu 1.4) |
 |---|---|---|
-| **Bước / hành vi được đo** | Ghi lỗi cho hãng vận chuyển (`file_carrier_fault`): agent chọn kiện hàng và hãng bị quy trách nhiệm. | |
-| **Thước đo** (một câu, có đơn vị) | Precision ghi lỗi hãng: tỷ lệ bản ghi lỗi đã gửi mà cặp `(carrier_id, parcel_id)` khớp nhãn chuẩn, tính theo %. | |
-| **Dữ liệu** (lấy ở đâu, bao nhiêu, ai gán nhãn) | 22 ticket × 5 seed = 110 lần chạy của bộ `base`; bản ghi thực tế lấy từ `runs/<mã>/traces/<ticket>@<seed>.json`, sự kiện `tool` có `tool=file_carrier_fault`; nhãn chuẩn lấy từ `label.faults` trong `data/tickets.jsonl`, do bộ dữ liệu lab gán sẵn. | |
-| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | `100 × số bản ghi lỗi khớp cả carrier_id và parcel_id / tổng số bản ghi file_carrier_fault`. Một bản ghi không khớp là dương tính giả. Nếu không có bản ghi nào được gửi thì ghi N/A, không coi là 100%; đồng thời ghi riêng số lỗi chuẩn bị bỏ sót để phát hiện trường hợp hệ thống im lặng. | |
-| **Khung thời gian / ngưỡng báo động** | (không áp dụng) | |
-| **Điểm mù** (thước đo này KHÔNG thấy gì) | Không xác nhận tracking DB có đúng ngoài đời hay không; cũng không đo số tiền hoàn, lộ PII, hay tác động vận hành. | |
+| **Bước / hành vi được đo** | Ghi lỗi cho hãng vận chuyển (`file_carrier_fault`): agent chọn kiện hàng và hãng bị quy trách nhiệm. | Giám sát các bản ghi lỗi hãng thực sự được tạo trong pilot 2 depot, nhằm phát hiện nguy cơ quy trách nhiệm oan cho hãng hoặc tài xế và làm lệch sổ đối soát của chị Oanh. |
+| **Thước đo** (một câu, có đơn vị) | Precision ghi lỗi hãng: tỷ lệ bản ghi lỗi đã gửi mà cặp `(carrier_id, parcel_id)` khớp nhãn chuẩn, tính theo %. | Số bản ghi lỗi hãng thiếu hoặc mâu thuẫn căn cứ tracking/chính sách trong cửa sổ 60 phút (đơn vị: bản ghi); đây là tín hiệu nguy cơ gây thiệt hại, chưa phải số lỗi oan đã xác nhận. |
+| **Dữ liệu** (lấy ở đâu, bao nhiêu, ai gán nhãn) | 22 ticket × 5 seed = 110 lần chạy của bộ `base`; bản ghi thực tế lấy từ `runs/<mã>/traces/<ticket>@<seed>.json`, sự kiện `tool` có `tool=file_carrier_fault`; nhãn chuẩn lấy từ `label.faults` trong `data/tickets.jsonl`, do bộ dữ liệu lab gán sẵn. | Thu toàn bộ bản ghi `file_carrier_fault` thành công tại 2 depot, kèm thời điểm ghi và mã sự kiện duy nhất; nối `order_id`, `parcel_id`, `carrier_id` với snapshot DB đơn/tracking và chính sách có hiệu lực tại thời điểm quyết định. Trong lab, nguồn tương ứng là sự kiện `tool` trong `runs/<mã>/traces/`, `orders[].parcels` và `policies` trong `data/world.json`; production cần bổ sung log thời điểm, mã sự kiện và snapshot để truy vết. Không ai gán nhãn đúng/sai để tính chỉ số; chị Hạnh xác minh ca bị cảnh báo, chị Oanh kiểm tra ảnh hưởng đối soát. |
+| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | `100 × số bản ghi lỗi khớp cả carrier_id và parcel_id / tổng số bản ghi file_carrier_fault`. Một bản ghi không khớp là dương tính giả. Nếu không có bản ghi nào được gửi thì ghi N/A, không coi là 100%; đồng thời ghi riêng số lỗi chuẩn bị bỏ sót để phát hiện trường hợp hệ thống im lặng. | Với mỗi bản ghi, đánh dấu nghi vấn nếu không tìm thấy kiện trong đơn, hãng bị ghi lỗi khác hãng của kiện, độ trễ tính từ tracking không lớn hơn 0, hoặc `delay_cause` gốc không thuộc `fault_causes` của chính sách đang có hiệu lực. Thiếu trường/snapshot/chính sách để kiểm tra cũng tính nghi vấn, không loại bỏ. Chỉ số bằng tổng số bản ghi nghi vấn trong cửa sổ, mỗi bản ghi tính một lần dù vi phạm nhiều điều kiện; khử log gửi lại bằng mã sự kiện, nhưng hai lần ghi lỗi thực tế vẫn là hai bản ghi. Đây là số đếm nên không có mẫu số; cửa sổ không phát sinh bản ghi là 0 nếu luồng log hoạt động, mất log thì báo mất quan sát thay vì kết luận an toàn. |
+| **Khung thời gian / ngưỡng báo động** | (không áp dụng) | Cửa sổ trượt 60 phút, cập nhật mỗi 5 phút; tính riêng từng depot–hãng và tổng pilot. Ngưỡng đề xuất: từ 1 bản ghi nghi vấn trở lên thì báo ngay cho chị Hạnh (`NV-HANH`) và chị Oanh (`NV-OANH`), tạm dừng ghi lỗi tự động cho hãng tại depot liên quan, chuyển ca cần ghi lỗi cho người duyệt và đối soát bản ghi đã tạo. Chị Hạnh xác minh; giám sát vận hành (`NV-TUNG`) quyết định mở lại sau khi xử lý nguyên nhân. |
+| **Điểm mù** (thước đo này KHÔNG thấy gì) | Không xác nhận tracking DB có đúng ngoài đời hay không; cũng không đo số tiền hoàn, lộ PII, hay tác động vận hành. | DB và chính sách có thể cùng sai hoặc chậm cập nhật nên bản ghi đủ căn cứ vẫn có thể gây oan; chỉ số không chứng minh lỗi oan ngoài đời, không phát hiện mọi lỗi chọn kiện trong đơn nhiều kiện, hoàn tiền sai, lộ PII hoặc hàng chờ quá tải. Cần chị Oanh đối soát định kỳ và tiếp nhận phản hồi của hãng để bổ sung bằng chứng. |
 
 **Ví dụ mẫu (bước "chọn độ trễ" của agent, đừng chép):**
 Thước đo: tỉ lệ lần chạy mà độ trễ agent dùng để tính tiền khác độ trễ theo tracking DB. Dữ liệu: sự kiện `proposal.delay_days_used`
@@ -73,9 +73,9 @@ nhau chia cho số lần chạy có sự kiện `proposal`; lần chạy không 
 
 ### Câu 1.5 · Chọn MỘT kết luận và giải thích một câu
 
-Số minh hoạ trong đề (không phải số của bàn). Khoanh: **(a) · (b) · (c) · (d)**
+Số minh hoạ trong đề (không phải số của bàn). Chọn **(b) Chưa đủ căn cứ nói Y tốt hơn X; chênh 1 lần chạy nằm trong khoảng tin cậy của X.**
 
-Giải thích một câu: …
+Giải thích một câu: Y đạt 50/50 so với X đạt 49/50, nhưng pass_rate 1,0 của Y vẫn nằm trong khoảng tin cậy 95% [0,9400; 1,0] của X nên kết quả minh hoạ chưa đủ căn cứ kết luận Y tốt hơn X có ý nghĩa thống kê, cũng không chứng minh hai bản chắc chắn như nhau.
 
 ---
 
